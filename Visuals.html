@@ -9,8 +9,8 @@
 <body>
 
 <script>
-  // Load data from CSV file
-  d3.csv('Anime_list.csv').then(function(data) {
+  // Load data from the GitHub repository
+  d3.csv('https://raw.githubusercontent.com/BillyPower/Visualization-Final/main/Anime_list.csv').then(function(data) {
     // Convert 'members', 'score', and 'count_of_episodes' column values to numbers
     data.forEach(function(d) {
       d.members = +d.members;
