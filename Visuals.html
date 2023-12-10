@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D3.js Scatter Plot Example</title>
+  <title>D3.js Bar Chart Example</title>
   <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <body>
@@ -15,38 +15,56 @@
     data.forEach(function(d) {
       d.members = +d.members;
       d.score = +d.score;
-      d.count_of_episodes = +d.count_of_episodes;
     });
 
-    // Set up SVG container with larger dimensions
-    const svgWidth = 1000;
-    const svgHeight = 800;
+    // Filter data for anime with score of 9 or higher
+    const filteredData = data.filter(d => d.score >= 9);
+
+    // Set up SVG container
+    const svgWidth = 800;
+    const svgHeight = 400;
+    const barWidth = 30; // Width of each bar
 
     const svg = d3.select("body")
       .append("svg")
       .attr("width", svgWidth)
       .attr("height", svgHeight);
 
-    // Create circles for scatter plot with larger radius
-    svg.selectAll("circle")
-      .data(data)
+    // Create bars for score
+    svg.selectAll(".score-bar")
+      .data(filteredData)
       .enter()
-      .append("circle")
-      .attr("cx", d => d.members / 100)
-      .attr("cy", d => svgHeight - d.score * 8)
-      .attr("r", d => d.count_of_episodes * 1.5) // Adjust the multiplier for a suitable size
-      .attr("fill", "orange")
-      .attr("opacity", 0.7);
+      .append("rect")
+      .attr("class", "score-bar")
+      .attr("x", (d, i) => i * (barWidth + 5))
+      .attr("y", d => svgHeight - d.score * 10)
+      .attr("width", barWidth)
+      .attr("height", d => d.score * 10)
+      .attr("fill", "orange");
 
-    // Add labels with larger font size
-    svg.selectAll("text")
-      .data(data)
+    // Create bars for members
+    svg.selectAll(".members-bar")
+      .data(filteredData)
+      .enter()
+      .append("rect")
+      .attr("class", "members-bar")
+      .attr("x", (d, i) => i * (barWidth + 5) + barWidth + 5)
+      .attr("y", d => svgHeight - d.members * 0.1)
+      .attr("width", barWidth)
+      .attr("height", d => d.members * 0.1)
+      .attr("fill", "steelblue");
+
+    // Add labels
+    svg.selectAll(".bar-label")
+      .data(filteredData)
       .enter()
       .append("text")
+      .attr("class", "bar-label")
       .text(d => d.Anime_name)
-      .attr("x", d => d.members / 100 + 10)
-      .attr("y", d => svgHeight - d.score * 8)
-      .attr("font-size", "12px") // Adjust the font size for readability
+      .attr("x", (d, i) => i * (barWidth + 5) + barWidth / 2)
+      .attr("y", svgHeight + 15)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
       .attr("fill", "black");
   });
 </script>
