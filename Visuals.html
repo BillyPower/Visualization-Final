@@ -18,32 +18,35 @@
       d.count_of_episodes = +d.count_of_episodes;
     });
 
-    // Set up SVG container
+    // Set up SVG container with larger dimensions
+    const svgWidth = 1000;
+    const svgHeight = 800;
+
     const svg = d3.select("body")
       .append("svg")
-      .attr("width", 800)
-      .attr("height", 600);
+      .attr("width", svgWidth)
+      .attr("height", svgHeight);
 
-    // Create circles for scatter plot
+    // Create circles for scatter plot with larger radius
     svg.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
-      .attr("cx", d => d.members / 1000)
-      .attr("cy", d => 600 - d.score * 10)
-      .attr("r", d => d.count_of_episodes) // Use count of episodes as the circle size
+      .attr("cx", d => d.members / 100)
+      .attr("cy", d => svgHeight - d.score * 8)
+      .attr("r", d => d.count_of_episodes * 1.5) // Adjust the multiplier for a suitable size
       .attr("fill", "orange")
       .attr("opacity", 0.7);
 
-    // Add labels
+    // Add labels with larger font size
     svg.selectAll("text")
       .data(data)
       .enter()
       .append("text")
       .text(d => d.Anime_name)
-      .attr("x", d => d.members / 1000 + 10)
-      .attr("y", d => 600 - d.score * 10)
-      .attr("font-size", "10px")
+      .attr("x", d => d.members / 100 + 10)
+      .attr("y", d => svgHeight - d.score * 8)
+      .attr("font-size", "12px") // Adjust the font size for readability
       .attr("fill", "black");
   });
 </script>
