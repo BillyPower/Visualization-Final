@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js Scatter Plot Example</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+
+<script>
+  // Load data from CSV file
+  d3.csv('Anime_list.csv').then(function(data) {
+    // Convert 'members', 'score', and 'count_of_episodes' column values to numbers
+    data.forEach(function(d) {
+      d.members = +d.members;
+      d.score = +d.score;
+      d.count_of_episodes = +d.count_of_episodes;
+    });
+
+    // Set up SVG container
+    const svg = d3.select("body")
+      .append("svg")
+      .attr("width", 800)
+      .attr("height", 600);
+
+    // Create circles for scatter plot
+    svg.selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("cx", d => d.members / 1000)
+      .attr("cy", d => 600 - d.score * 10)
+      .attr("r", d => d.count_of_episodes) // Use count of episodes as the circle size
+      .attr("fill", "orange")
+      .attr("opacity", 0.7);
+
+    // Add labels
+    svg.selectAll("text")
+      .data(data)
+      .enter()
+      .append("text")
+      .text(d => d.Anime_name)
+      .attr("x", d => d.members / 1000 + 10)
+      .attr("y", d => 600 - d.score * 10)
+      .attr("font-size", "10px")
+      .attr("fill", "black");
+  });
+</script>
+
+</body>
+</html>
