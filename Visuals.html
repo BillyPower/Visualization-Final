@@ -20,6 +20,9 @@
     // Filter data for anime with score of 9 or higher
     const filteredData = data.filter(d => d.score >= 9);
 
+    // Log the filtered data to inspect values
+    console.log(filteredData);
+
     // Set up SVG container
     const svgWidth = 800;
     const svgHeight = 400;
@@ -62,7 +65,7 @@
       .attr("class", "bar-label")
       .text(d => d.Anime_name)
       .attr("x", (d, i) => i * (barWidth + 5) + barWidth / 2)
-      .attr("y", svgHeight + 15)
+      .attr("y", d => svgHeight + 15)
       .attr("text-anchor", "middle")
       .attr("font-size", "10px")
       .attr("fill", "black");
