@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive D3 Bar Chart</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <style>
+    .bar {
+      fill: steelblue;
+    }
+
+    .bar:hover {
+      fill: orange;
+    }
+
+    button {
+      margin-bottom: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .pie-chart {
+      width: 50%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Add a button to show the top 20 shows with the most episodes -->
+  <button onclick="showTop20()">Show Top 20 Shows</button>
+
+  <!-- Add a button to show the bottom 20 shows with the least episodes -->
+  <button onclick="showBottom20()">Show Bottom 20 Shows</button>
+
+  <!-- Add a button to go back to the original first 20 show entries -->
+  <button onclick="showOriginal()">Show Original 20 Shows</button>
+
+  <!-- SVG container for the bar chart -->
+  <svg id="barChart"></svg>
+
+  <!-- Container for the table -->
+  <div id="tableContainer">
+    <table id="showTable">
+      <thead>
+        <tr>
+          <th>Anime</th>
+          <th>Episode Count</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Container for the pie chart -->
+  <div class="pie-chart" id="pieChartContainer">
+    <svg id="pieChart"></svg>
+  </div>
+
+  <script>
+    // Load data from the GitHub repository
+    d3.csv('https://raw.githubusercontent.com/BillyPower/Visualization-Final/main/Anime_list.csv').then(function (data) {
+      // Convert 'count of episodes/movies' column values to numbers
+      data.forEach(function (d) {
+        d['count of episodes/movies'] = +d['count of episodes/movies'];
+      });
+
+      // Set up SVG container for the bar chart
+      const svgWidth = 1000;
+      const svgHeight = 500;
+      const margin = { top: 70, right: 20, bottom: 90, left: 50 };
+      const barWidth = 60;
+
+      const svgBar = d3.select("#barChart")
+        .attr("width", svgWidth + margin.left + margin.right)
+        .attr("height", svgHeight + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + (margin.top + 50) + ")");
+
+      // Display the first 20 TV shows
+      let displayedData = data.filter(d => d['medium'] === 'TV').slice(0, 20);
+
+      // Create the initial bar chart
+      updateBarChart(displayedData);
+      updateTable(displayedData);
+
+      // Function to update the bar chart
+      function updateBarChart(updatedData) {
+        // Create bars
+        const bars = svgBar.selectAll(".bar")
+          .data(updatedData, d => d.Anime_name);
+
+        bars.enter()
+          .append("rect")
+          .attr("class", "bar")
+          .merge(bars)
+          .transition()
+          .duration(500)
+          .attr("x", (d, i) => i * (barWidth + 10))
+          .attr("y", d => svgHeight - d['count of episodes/movies'] * 2)
+          .attr("width", barWidth)
+          .attr("height", d => d['count of episodes/movies'] * 2)
+          .attr("fill", "steelblue");
+
+        // Remove bars that are not needed
+        bars.exit().remove();
+
+        // Add data labels
+        const labels = svgBar.selectAll(".bar-label")
+          .data(updatedData, d => d.Anime_name);
+
+        labels.enter()
+          .append("text")
+          .attr("class", "bar-label")
+          .merge(labels)
+          .text(d => d['count of episodes/movies'])
+          .attr("x", (d, i) => i * (barWidth + 10) + barWidth / 2)
+          .attr("y", d => svgHeight - d['count of episodes/movies'] * 2 - 5)
+          .attr("text-anchor", "middle")
+          .attr("font-size", "10px")
+          .attr("fill", "black");
+
+        // Remove labels that are not needed
+        labels.exit().remove();
+
+        // Update axis labels and title
+        svgBar.selectAll(".x-axis-label").remove();
+        svgBar.selectAll(".y-axis-label").remove();
+        svgBar.selectAll(".chart-title").remove();
+
+        // Add x-axis label for bar chart
+        svgBar.append("text")
+          .attr("class", "x-axis-label")
+          .attr("text-anchor", "middle")
+          .attr("x", svgWidth / 2)
+          .attr("y", svgHeight + margin.bottom - 10)
+          .text("Anime");
+
+        // Add y-axis label for bar chart
+        svgBar.append("text")
+          .attr("class", "y-axis-label")
+          .attr("text-anchor", "middle")
+          .attr("transform", "rotate(-90)")
+          .attr("x", -svgHeight / 2)
+          .attr("y", -margin.left)
+          .text("Number of Episodes");
+
+        // Add chart title for bar chart
+        svgBar.append("text")
+          .attr("class", "chart-title")
+          .attr("text-anchor", "middle")
+          .attr("x", svgWidth / 2)
+          .attr("y", -margin.top / 2)
+          .text("Top 20 TV Shows by Episode Count");
+      }
+
+      // Function to update the table
+      function updateTable(updatedData) {
+        const tbody = d3.select("#showTable tbody");
+        // Remove existing rows
+        tbody.selectAll("tr").remove();
+        // Append new rows
+        const rows = tbody.selectAll("tr")
+          .data(updatedData)
+          .enter()
+          .append("tr");
+        // Append cells to rows
+        rows.append("td").text(d => d.Anime_name);
+        rows.append("td").text(d => d['count of episodes/movies']);
+      }
+
+      // Function to show the top 20 TV shows by episode count
+      window.showTop20 = function () {
+        // Sort data by episode count in descending order
+        displayedData = data.filter(d => d['medium'] === 'TV').sort((a, b) => b['count of episodes/movies'] - a['count of episodes/movies']).slice(0, 20);
+        updateBarChart(displayedData);
+        updateTable(displayedData);
+        updatePieChart(data);
+      };
+
+      // Function to show the bottom 20 TV shows by episode count
+      window.showBottom20 = function () {
+        // Sort data by episode count in ascending order
+        displayedData = data.filter(d => d['medium'] === 'TV').sort((a, b) => a['count of episodes/movies'] - b['count of episodes/movies']).slice(0, 20);
+        updateBarChart(displayedData);
+        updateTable(displayedData);
+        updatePieChart(data);
+      };
+
+      // Function to go back to the original first 20 show entries
+      window.showOriginal = function () {
+        displayedData = data.filter(d => d['medium'] === 'TV').slice(0, 20);
+        updateBarChart(displayedData);
+        updateTable(displayedData);
+        updatePieChart(data);
+      };
+
+      // Function to update the pie chart
+      function updatePieChart(updatedData) {
+        // Count the occurrences of each medium
+        const mediumCounts = d3.rollup(updatedData, v => v.length, d => d.medium);
+
+        // Convert the map to an array of objects
+        const mediumData = Array.from(mediumCounts, ([medium, count]) => ({ medium, count }));
+
+        // Set up color scale
+        const color = d3.scaleOrdinal()
+          .domain(mediumData.map(d => d.medium))
+          .range(d3.schemeCategory10);
+
+        // Set up pie chart dimensions
+        const pieWidth = 300;
+        const pieHeight = 300;
+        const pieRadius = Math.min(pieWidth, pieHeight) / 2;
+
+        // Create a new SVG for the pie chart
+        const svgPie = d3.select("#pieChart")
+          .attr("width", pieWidth)
+          .attr("height", pieHeight)
+          .append("g")
+          .attr("transform", "translate(" + pieWidth / 2 + "," + pieHeight / 2 + ")");
+
+        // Set up pie chart layout
+        const pie = d3.pie().value(d => d.count);
+
+        // Create arc generator
+        const arc = d3.arc()
+          .outerRadius(pieRadius)
+          .innerRadius(0);
+
+        // Create pie slices
+        const slices = svgPie.selectAll("path")
+          .data(pie(mediumData))
+          .enter()
+          .append("path")
+          .attr("d", arc)
+          .attr("fill", d => color(d.data.medium));
+
+        // Add text labels to pie slices
+        const labels = svgPie.selectAll("text")
+          .data(pie(mediumData))
+          .enter()
+          .append("text")
+          .attr("transform", d => `translate(${arc.centroid(d)})`)
+          .attr("dy", "0.35em") // Adjust the vertical position of labels
+          .attr("text-anchor", "middle")
+          .text(d => d.data.medium);
+      }
+    });
+  </script>
+
+</body>
+
+</html>
+
